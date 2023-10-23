@@ -2,8 +2,8 @@
 #define MotorControllerLib
 
 // pulse width modulation constants
-#define PWM_Res      8
-#define PWM_Freq  1200
+#define PWM_Res     8
+#define PWM_Freq  5000
 
 // if this amount of time passes without any encoder pulses 
 // then the motor has stopped
@@ -51,7 +51,7 @@ class MotorController{
     void resetPulses();
     double getAngleRad();
     double getAngleDeg(); 
-    bool hasPulsesReachedTarget();
+    bool hasPulsesExceededTarget();
     /**
      * @brief Get the current speed of the motor.
      * @return The current motor speed.

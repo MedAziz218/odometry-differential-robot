@@ -15,7 +15,7 @@ PIDController rightMotorSpeedPID, leftMotorSpeedPID;
 // encoderPinB is  /* GREEN */
 MotorController rightMotor(26, 25, 35, 34);
 MotorController leftMotor(32, 33, 39, 36);
-
+double l,r;
 int rightMotorTargetRPM = 0;
 int leftMotorTargetRPM = 0;
 void setup()
@@ -76,15 +76,23 @@ void loop()
 
     
   }
+  //TODO: remove the speedPID controllers
+  //TODO: instead of controlling the speed of the motors , make the position tracking work
+  //TODO: and control the motors based on that
+  //TODO: if the position tracking is good then it the speed of the motors doesn't matter at all 
+  //TODO: conclusion REMOVE THE SPEEDPID and ADD THE POSITION TRACKING 
+  //TEST: try to make the robot go from (0,0) to (50,0) in cm 
+  
+  //TODO: add bluetooth serial to control the robot and get serial output messages
   if (program_counter==0){
-    setLeftMotorTargetRPM(110);
-    setRightMotorTargetRPM(110);
-    leftMotor.targetPulses = leftMotor.getPulses()+226;
-    rightMotor.targetPulses = rightMotor.getPulses()+226;
+    setLeftMotorTargetRPM(120);
+    setRightMotorTargetRPM(120);
+    leftMotor.targetPulses = leftMotor.getPulses()+CMtoPulses(50);
+    rightMotor.targetPulses = rightMotor.getPulses()+CMtoPulses(50);
     program_counter=1;
-    Serial.println("here");
+    // Serial.println("here");
     timer3.start(5000);
-  }else if (program_counter==1&& timer3.finished()){
+  }else if (program_counter==1 && leftMotor.hasPulsesExceededTarget() && rightMotor.hasPulsesExceededTarget()){
     setLeftMotorTargetRPM(0);
     setRightMotorTargetRPM(0);
     program_counter = 2;
@@ -93,13 +101,21 @@ void loop()
   }
   
   
+  
   if (timer2.finished()){
     timer2.start( 5 ); // control the motors voltage every 1 milli second
     // control the motor voltage with the speedPID to get the desired RPM for each motor
-    double l = leftMotorSpeedPID.compute(leftMotor.getSpeedRPM(),GRAPH,VERBOSE) ;
-    double r =rightMotorSpeedPID.compute(rightMotor.getSpeedRPM(),GRAPH,VERBOSE);
+     l = leftMotorSpeedPID.compute(leftMotor.getSpeedRPM() );//,GRAPH,VERBOSE) ;
+     r =rightMotorSpeedPID.compute(rightMotor.getSpeedRPM() );//,GRAPH,VERBOSE);
     // Serial.print(">PWM: ");Serial.print(l);Serial.print(" , ");Serial.print(r);Serial.println(" , ");
-
+    Serial.print(">speed: ");Serial.print(leftMotor.getSpeedRPM());Serial.print(" , ");Serial.print(rightMotor.getSpeedRPM());Serial.println(" , "); 
+    // Serial.print(">bool: ");Serial.print(leftMotor.hasPulsesExceededTarget());Serial.print(" , ");Serial.print(rightMotor.hasPulsesExceededTarget());Serial.println(" , "); 
+    // Serial.print(">target: ");Serial.print(leftMotor.targetPulses);Serial.print(" , ");Serial.print(rightMotor.targetPulses);Serial.println(" , "); 
+    // Serial.print(">pulses: ");Serial.print(leftMotor.getPulses());Serial.print(" , ");Serial.print(rightMotor.getPulses());Serial.print(" , "); Serial.println(rightMotor.movement_direction);
+    
+    leftMotor.setVoltage(l);
+    rightMotor.setVoltage(r);
+  }else {
     leftMotor.setVoltage(l);
     rightMotor.setVoltage(r);
   }
@@ -131,8 +147,8 @@ void MoveForward(int pulses, int mRPM) {
     setRightMotorTargetRPM(0);
   } 
 }
-int CMtoSteps(float cm){
-  float circumference = (WHEEL_DIAMETER * 3.14) / 10;
+int CMtoPulses(float cm){
+  float circumference = (WHEEL_DIAMETER * PI) / 10;
   float revolutions = cm/circumference ;
   return (int) revolutions*ENCODE_PULSE_PER_REV;
 }

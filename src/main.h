@@ -9,5 +9,5 @@ template <MotorController& mott>
 void readEncoder();
 void setLeftMotorTargetRPM(int rpm);
 void setRightMotorTargetRPM(int rpm);
-int CMtoSteps(float cm);
+int CMtoPulses(float cm);
 #endif

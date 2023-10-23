@@ -21,12 +21,9 @@ long int MotorController::getPulses(){
     long int pulses_returned=0; noInterrupts(); pulses_returned = pulses; interrupts();
     return pulses_returned;
 }
-bool MotorController::hasPulsesReachedTarget(){
-    if (movement_direction){
+bool MotorController::hasPulsesExceededTarget(){
         return pulses>targetPulses;
-    }else {
-        return pulses<targetPulses;
-    }
+
 }
 // returns the angle the motor has rotated in radians 
 double MotorController::getAngleRad(){
