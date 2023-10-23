@@ -17,8 +17,9 @@ class MotorController{
     // sensor data
     volatile unsigned long last_elapsed_time = 0;
     volatile unsigned long last_interrupt_time = 0;
-    volatile long int pos = 0;  
+    volatile long int pulses = 0;  
     volatile int  movement_direction = 0;
+    int targetPulses = 0;
 
     /**
      * @brief Constructor for the MotorController class.
@@ -26,13 +27,17 @@ class MotorController{
      * @param hbridgeB The H-bridge pin B.
      * @param encoderPinA The encoder pin A.
      * @param encoderPinB The encoder pin B.
-     * @param pos The initial position (default: 0).
+     * @param pulses The initial position (default: 0).
      */
-    MotorController(int hbridgeA, int hbridgeB, int encoderPinA, int encoderPinB, int pos = 0):
+    
+    MotorController(const MotorController& ){};
+    MotorController(int hbridgeA, int hbridgeB, int encoderPinA, int encoderPinB, int pulses = 0):
 
         hbridgeA(hbridgeA),hbridgeB(hbridgeB),
         encoderPinA(encoderPinA),encoderPinB(encoderPinB),
-        pos(pos) {};
+        pulses(pulses) {};
+    
+   
     /**
      * @brief Setup the motor controller.
      */
@@ -42,19 +47,22 @@ class MotorController{
      * @brief Get the current position of the motor.
      * @return The current motor position.
      */
-    long int getPos();
-
+    long int getPulses();
+    void resetPulses();
+    double getAngleRad();
+    double getAngleDeg(); 
+    bool hasPulsesReachedTarget();
     /**
      * @brief Get the current speed of the motor.
      * @return The current motor speed.
      */
     double getSpeed();
-
+    double getSpeedRPM();
     /**
      * @brief Set the motor PWM value to control the motor.
      * @param pwm_val The PWM value to set.
      */
-    void setMotor(int pwm_val);
+    void setVoltage(int pwm_val);
 
     /**
      * @brief Set the PWM channels for motor control.
@@ -66,11 +74,11 @@ class MotorController{
     /**
      * @brief Increment the motor position.
      */
-    void increment_pos();
+    void increment_pulses();
 
     /**
      * @brief Decrement the motor position.
      */
-    void decrement_pos();
+    void decrement_pulses();
 };
 #endif

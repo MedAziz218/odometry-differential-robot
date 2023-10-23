@@ -1,5 +1,10 @@
 #include "MotorController.h"
 #include <Arduino.h>
+#ifndef ENCODE_PULSE_PER_REV
+    #define ENCODE_PULSE_PER_REV 226
+    #define ENCODE_PULSE_TO_ANGLE_DEG 1.59292035398230088495575 // 360/226
+    #define ENCODE_PULSE_TO_ANGLE_RAD 0.01390085244951235946222 // PI/226
+#endif
 
 // make sure to use set_PWM_channels function before this
 void MotorController::setup(){
@@ -8,13 +13,30 @@ void MotorController::setup(){
     ledcSetup(pwm_channel1, PWM_Freq, PWM_Res); ledcAttachPin(hbridgeA, pwm_channel1) ;
     ledcSetup(pwm_channel2, PWM_Freq, PWM_Res); ledcAttachPin(hbridgeB, pwm_channel2) ;
 }
-// returns the position in units of encoder counts 
-long int MotorController::getPos(){
-    long int pos_returned=0; noInterrupts(); pos_returned = pos; interrupts();
-    return pos_returned;
+void MotorController::resetPulses(){
+    noInterrupts(); pulses = 0; interrupts();
 }
-
-// returns the speed in units of encoder counts per second
+// returns the pulsesition in units of encoder pulses 
+long int MotorController::getPulses(){
+    long int pulses_returned=0; noInterrupts(); pulses_returned = pulses; interrupts();
+    return pulses_returned;
+}
+bool MotorController::hasPulsesReachedTarget(){
+    if (movement_direction){
+        return pulses>targetPulses;
+    }else {
+        return pulses<targetPulses;
+    }
+}
+// returns the angle the motor has rotated in radians 
+double MotorController::getAngleRad(){
+    return getPulses()*ENCODE_PULSE_TO_ANGLE_RAD;
+}
+// returns the angle the motor has rotated in degrees 
+double MotorController::getAngleDeg(){
+    return getPulses()*ENCODE_PULSE_TO_ANGLE_DEG;
+}
+// returns the speed in units of encoder pulses per second
 double MotorController::getSpeed(){ 
     double speed; unsigned long stop_indicator;
     noInterrupts(); 
@@ -24,8 +46,12 @@ double MotorController::getSpeed(){
     if (stop_indicator>ENC_STOP_TIME_THRESHOLD){ speed = 0; }
     return speed;
 }
+// returns the speed in units of Rounds per Minute
+double MotorController::getSpeedRPM(){ 
+    return getSpeed()*60.0/ENCODE_PULSE_PER_REV;
+}
 // set motor direction and voltage applied to the motor
-void MotorController::setMotor(int pwm_val){
+void MotorController::setVoltage(int pwm_val){
     int direction = (pwm_val >=0) ? 1:-1;
     pwm_val = abs(pwm_val);
     if(direction == 1){
@@ -46,9 +72,10 @@ void MotorController::setMotor(int pwm_val){
 void MotorController::set_PWM_channels(int channel1,int channel2){
     pwm_channel1 = channel1; pwm_channel2 = channel2;
 }
-void MotorController::increment_pos(){
-    pos ++; movement_direction = 1;
+void MotorController::increment_pulses(){
+    pulses ++; movement_direction = 1;
 }
-void MotorController::decrement_pos(){
-    pos --; movement_direction = -1;
+void MotorController::decrement_pulses(){
+    pulses --; movement_direction = -1;
 }
+

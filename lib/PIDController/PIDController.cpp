@@ -53,7 +53,7 @@ void PIDController::printGraph (double sensorInput, String verbose) {
   Serial.print(sensorInput);
   if (verbose == VERBOSE) {
     Serial.print(",");
-    Serial.print(output);
+    Serial.print(output,10);
   }
   Serial.print(",");
   Serial.println(setPoint);
@@ -102,12 +102,11 @@ double PIDController::compute (double sensor, String graph, String verbose) {
   // Update lastErr and lastTime to current values for use in next execution
   lastErr = error;
   lastTime = now;
-
+  if (sensor == 0 && setPoint ==0) output = 0;
   // Draw the garph if GRAPH mode
   if (graph == GRAPH) {
     printGraph(sensor, verbose);
   }
-
   // Return the current output
   return output;
 }

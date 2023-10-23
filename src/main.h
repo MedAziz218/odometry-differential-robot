@@ -4,7 +4,10 @@
 #include "SoftwareTimer.h"
 #include "PIDController.h"
 #include "MotorController.h"
-void read_rightEncoder();
-void read_leftEncoder();
-void readEncoder(MotorController& mott);
+
+template <MotorController& mott>
+void readEncoder();
+void setLeftMotorTargetRPM(int rpm);
+void setRightMotorTargetRPM(int rpm);
+int CMtoSteps(float cm);
 #endif
